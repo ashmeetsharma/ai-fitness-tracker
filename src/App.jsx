@@ -7,8 +7,8 @@ function App() {
   const [bmi, setBmi] = useState(null);
 
   const [preview, setPreview] = useState(null);
-  const [foodName, setFoodName] = useState("");
-  const [aiData, setAiData] = useState(null);
+  const [foodImage, setFoodImage] = useState(null);
+  const [aiResult, setAiResult] = useState("");
   const [loading, setLoading] = useState(false);
 
   const calculateBMI = () => {
@@ -19,39 +19,43 @@ function App() {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) setPreview(URL.createObjectURL(file));
+    if (!file) return;
+
+    setFoodImage(file);
+    setPreview(URL.createObjectURL(file));
   };
 
   const analyzeFood = async () => {
-    if (!foodName) {
-      alert("Enter food name first");
+    if (!foodImage) {
+      alert("Please upload a food image first");
       return;
     }
 
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const response = await fetch(
-        "https://ai-fitness-tracker-seven.vercel.app/api/foodTextAnalysis",
-        {
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      try {
+        const base64 = reader.result.split(",")[1];
+
+        const response = await fetch("/api/foodTextAnalysis", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ foodName })
-        }
-      );
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: base64 }),
+        });
 
-      const data = await response.json();
-      console.log("AI RESPONSE:", data);
+        const data = await response.json();
+        setAiResult(data.result);
+      } catch (err) {
+        console.error("FETCH ERROR:", err);
+        alert("Food analysis failed");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setAiData(data);
-    } catch (err) {
-      console.error("FETCH ERROR:", err);
-      alert("Request failed – check console");
-    } finally {
-      setLoading(false);
-    }
+    reader.readAsDataURL(foodImage);
   };
 
   return (
@@ -62,7 +66,6 @@ function App() {
       <div className="overlay"></div>
 
       <div className="layout">
-        {/* LEFT PANEL */}
         <div className="left-panel">
           <div className="card">
             <h1>AI Fitness Tracker</h1>
@@ -87,24 +90,11 @@ function App() {
             <hr />
 
             <div className="section">
-              <h3>Food Tracker (Text AI)</h3>
+              <h3>Food Tracker (Image AI)</h3>
 
-              <input type="file" accept="image/*" onChange={handleImageChange} />
+              <input type="file" accept="image/*" onChange={(e) => handleImageChange(e)} />
 
-              {preview && (
-                <img
-                  src={preview}
-                  alt="preview"
-                  className="food-preview"
-                />
-              )}
-
-              <input
-                type="text"
-                placeholder="Enter food name (e.g. Banana, Boiled Egg)"
-                value={foodName}
-                onChange={(e) => setFoodName(e.target.value)}
-              />
+              {preview && <img src={preview} alt="preview" className="food-preview" />}
 
               <button onClick={analyzeFood} disabled={loading}>
                 {loading ? "Analyzing..." : "Get Calories"}
@@ -113,7 +103,6 @@ function App() {
           </div>
         </div>
 
-        {/* RIGHT PANEL */}
         <div className="right-panel">
           <div className="card">
             <h3>Workout Plan</h3>
@@ -121,14 +110,9 @@ function App() {
             <p>🏋️ Strength: Pushups, Squats</p>
             <p>🧠 Tip: Sleep & hydrate well</p>
 
-            {aiData && (
+            {aiResult && (
               <div className="ai-stats">
-                <h4>{aiData.food}</h4>
-                <div className="stats-grid">
-                  <span>🔥 {aiData.calories} kcal</span>
-                  <span>💪 {aiData.protein}</span>
-                </div>
-                <p>{aiData.advice}</p>
+                <pre style={{ whiteSpace: "pre-wrap" }}>{aiResult}</pre>
               </div>
             )}
           </div>
