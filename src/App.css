@@ -1,0 +1,45 @@
+.app {
+  position: relative;
+  min-height: 100vh; /* Changed from height to min-height for scrolling */
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Video: Locked to the background */
+.bg-video {
+  position: fixed; /* Fixed keeps it from moving when you scroll the card */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: -2; /* Sends it to the very back */
+}
+
+/* Dark overlay: Between video and card */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: -1; /* Above video, below card */
+}
+
+/* BMI Card: Centered on top */
+.card {
+  position: relative; /* Not fixed, so it can scroll if content is long */
+  z-index: 1; 
+  width: 90%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.1); /* Glass effect */
+  backdrop-filter: blur(15px);
+  padding: 30px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  margin: 40px 0; /* Adds space if the screen is small */
+}
