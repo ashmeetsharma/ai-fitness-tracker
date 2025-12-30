@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Optional: Add a smooth scroll and dark background to the whole body */
+body {
+  margin: 0;
+  background-color: #020617; /* Matches slate-950 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
